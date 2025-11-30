@@ -1,6 +1,7 @@
 import math
 import random
 import sys
+import datetime
 import pygame
 
 # Cozy Game - minimal Pygame prototype
@@ -386,6 +387,72 @@ def draw_tree(surf, x, y, size=1.0):
         x - foliage_r // 3), int(y - foliage_r // 3)), foliage_r // 2)
 
 
+def draw_clock(surf):
+    # get current time
+    now = datetime.datetime.now()
+    time_str = now.strftime("%I:%M %p")  # 12-hour format with AM/PM
+
+    # clock background (rounded rectangle)
+    clock_w, clock_h = 140, 44
+    clock_x, clock_y = WIDTH - clock_w - 20, HEIGHT - clock_h - 20
+    bg_rect = pygame.Rect(clock_x, clock_y, clock_w, clock_h)
+
+    # --- soft glow aura ---
+    glow = pygame.Surface((clock_w + 40, clock_h + 40), pygame.SRCALPHA)
+    pygame.draw.ellipse(glow, (255, 220, 180, 70), glow.get_rect())
+    surf.blit(glow, (clock_x - 20, clock_y - 20))
+
+    # gradient-style background (two-tone cozy beige)
+    pygame.draw.rect(surf, (240, 220, 190), bg_rect, border_radius=12)
+    inner_rect = bg_rect.inflate(-4, -4)
+    pygame.draw.rect(surf, (220, 200, 170), inner_rect, border_radius=10)
+
+    # outline
+    pygame.draw.rect(surf, (100, 80, 60), bg_rect, 2, border_radius=12)
+
+    # decorative dots (like rivets or lights)
+    for i in range(3):
+        pygame.draw.circle(surf, (180, 150, 120),
+                           (clock_x + 12 + i*10, clock_y + clock_h - 8), 2)
+
+    # render time text centered
+    font = pygame.font.SysFont(None, 26)
+    txt = font.render(time_str, True, (40, 30, 20))
+    txt_rect = txt.get_rect(center=bg_rect.center)
+    surf.blit(txt, txt_rect)
+
+    # small sparkle flair
+    sparkle_color = (255, 240, 200)
+    pygame.draw.circle(surf, sparkle_color,
+                       (clock_x + clock_w - 12, clock_y + 10), 3)
+    pygame.draw.circle(surf, sparkle_color,
+                       (clock_x + clock_w - 18, clock_y + 16), 2)
+
+
+def draw_quote(surf):
+    quote_text = "\"Creativity is intelligence having fun.\""
+
+    # plaque background
+    plaque_w, plaque_h = 300, 32
+    plaque_x, plaque_y = 260 + 65, 17
+    plaque_rect = pygame.Rect(plaque_x, plaque_y, plaque_w, plaque_h)
+
+    # background with rounded corners
+    pygame.draw.rect(surf, (235, 215, 185), plaque_rect, border_radius=12)
+    pygame.draw.rect(surf, (120, 90, 60), plaque_rect, 2, border_radius=12)
+
+    # subtle shadow/glow
+    glow = pygame.Surface((plaque_w+20, plaque_h+20), pygame.SRCALPHA)
+    pygame.draw.ellipse(glow, (255, 230, 200, 60), glow.get_rect())
+    surf.blit(glow, (plaque_x-10, plaque_y-10))
+
+    # render quote centered
+    font = pygame.font.SysFont(None, 23)
+    txt = font.render(quote_text, True, (60, 40, 30))
+    txt_rect = txt.get_rect(center=plaque_rect.center)
+    surf.blit(txt, txt_rect)
+
+
 def draw_ui(surf, coziness):
     # top-left cozy meter
     pygame.draw.rect(surf, (30, 30, 30), (20, 20, 220, 28), border_radius=6)
@@ -747,6 +814,8 @@ def main():
         player.draw(game_surface)
 
         draw_ui(game_surface, coziness)
+        draw_clock(game_surface)
+        draw_quote(game_surface)
 
         # shop panel
         if shop_open:
