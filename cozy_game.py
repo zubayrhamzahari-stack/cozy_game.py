@@ -14,7 +14,7 @@ TEA_SPAWN_RATE = 0.06  # expected spawns per second (low)
 TEA_MAX = 7  # maximum number of teas at once
 SPAWN_EFFECT_LIFE = 1.2  # seconds for spawn notification to live
 CAT_COZY_GAIN = 1.5  # coziness per second when near a friendly cat
-RUG_COZY_GAIN = 1.0  # coziness per second when standing on rug
+RUG_COZY_GAIN = 2.0  # coziness per second when standing on rug
 CAT_COUNT = 1
 SHOP_BUTTON_RECT = pygame.Rect(WIDTH - 100, 20, 80, 28)
 WINDCHIME_POS = (50, 100)  # top-left windchime
@@ -781,3 +781,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
