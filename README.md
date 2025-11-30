@@ -7,6 +7,7 @@ Features
 - Move a character with arrow keys or WASD.
 - Sit/stand with Space — sitting near the fire increases your Cozy score.
 - Collect tea to gain more cozy points.
+- And More!
 
 Quick start (Windows PowerShell)
 
@@ -19,3 +20,4 @@ Notes
 
 - This is a minimal example with no external assets. It should run with a standard Python + Pygame setup.
 - If running inside a headless environment (no display), run locally on your machine with a desktop session.
+
