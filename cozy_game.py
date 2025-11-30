@@ -158,12 +158,36 @@ class Tea:
     def __init__(self):
         self.x = random.randint(40, WIDTH - 40)
         self.y = random.randint(120, HEIGHT - 80)
-        self.r = 10
-        self.color = (180, 120, 100)
+        # collision radius (used in main loop)
+        self.r = 12
+
+        # drawing dimensions for side-view mug
+        self.w = 26
+        self.h = 30
+
+        self.cup_color = (245, 240, 230)  # ceramic white
+        self.tea_color = (180, 120, 80)   # warm tea brown
 
     def draw(self, surf):
-        pygame.draw.circle(surf, self.color, (self.x, self.y), self.r)
-        pygame.draw.rect(surf, (130, 80, 70), (self.x - 6, self.y - 2, 12, 4))
+        cx, cy = self.x, self.y
+
+        # cup body (rounded rectangle)
+        cup_rect = pygame.Rect(cx - self.w//2, cy - self.h//2, self.w, self.h)
+        pygame.draw.rect(surf, self.cup_color, cup_rect, border_radius=8)
+        pygame.draw.rect(surf, (100, 80, 60), cup_rect, 2, border_radius=8)
+
+        # tea surface as ellipse near the top
+        tea_rect = pygame.Rect(cx - self.w//2 + 4, cy - self.h//2 + 4,
+                               self.w - 8, self.h//3)
+        pygame.draw.ellipse(surf, self.tea_color, tea_rect)
+
+        # handle: thin semicircle arc, anchored to cup edge
+        # Notice: the rect starts exactly at cup’s right edge (cx + self.w//2 - handle_width//2)
+        handle_w, handle_h = 10, 14
+        handle_rect = pygame.Rect(cx + self.w//2 - handle_w//2, cy - handle_h//2,
+                                  handle_w, handle_h)
+        pygame.draw.arc(surf, (100, 80, 60), handle_rect,
+                        -math.pi/2, math.pi/2, 2)
 
 
 class Fruit:
@@ -172,7 +196,7 @@ class Fruit:
         'apple': (220, 50, 50),
         'orange': (255, 140, 0),
         'lemon': (255, 220, 50),
-        'plum': (150, 80, 150),
+        'grapes': (150, 80, 150),
     }
 
     def __init__(self, tree_x, tree_y, tree_size=1.0):
@@ -392,6 +416,8 @@ def main():
 
     running = True
     spawn_effects = []
+    teas_collected = 0
+
     # rug placement (right side)
     rug_rect = pygame.Rect(WIDTH - 260, HEIGHT - 220, 200, 120)
     # lantern light position
@@ -585,6 +611,8 @@ def main():
             if dist < player.r + t.r:
                 teas.remove(t)
                 coziness = min(100, coziness + 12)
+                teas_collected += 1
+                spawn_effects.append(SpawnEffect(t.x, t.y, 'Sip!'))
                 # spawn a new tea slowly
                 if random.random() < 0.6:
                     new_tea = Tea()
@@ -642,11 +670,30 @@ def main():
         # fireplace
         draw_fire(game_surface, fire_x, fire_y, time)
 
-        # rug (cozy carpet) - drawn on top
+        # rug (cozy carpet) - more realistic
         pygame.draw.rect(game_surface, (210, 170, 140),
-                         rug_rect, border_radius=10)
+                         rug_rect, border_radius=12)
         pygame.draw.rect(game_surface, (195, 150, 110),
-                         rug_rect.inflate(-8, -8), border_radius=8)
+                         rug_rect.inflate(-8, -8), border_radius=10)
+
+        # variable for tassel count
+        TASSEL_COUNT = 11  # change this number to control how many tassels per side
+
+        # fringe (tassels) on left/right edges
+        for i in range(TASSEL_COUNT):
+            y = rug_rect.top + (i + 0.8) * (rug_rect.height // TASSEL_COUNT)
+            # left tassels
+            pygame.draw.line(game_surface, (160, 120, 90),
+                             (rug_rect.left, y), (rug_rect.left - 6, y), 2)
+            # right tassels
+            pygame.draw.line(game_surface, (160, 120, 90),
+                             (rug_rect.right, y), (rug_rect.right + 6, y), 2)
+
+        # subtle woven pattern (horizontal stripes)
+        for i in range(0, rug_rect.height, 12):
+            pygame.draw.line(game_surface, (180, 140, 110),
+                             (rug_rect.left + 6, rug_rect.top + i),
+                             (rug_rect.right - 6, rug_rect.top + i), 1)
 
         # windchime
         windchime.draw(game_surface)
@@ -762,7 +809,8 @@ def main():
         lines = [
             'Move: Arrow keys / WASD | Space: Sit/Stand | E: Interact (windchime/book)',
             'Sit near fire for cozy gain, collect tea, go on rug for boost',
-            f'High cozy: {int(coziness)}/{HIGH_COZY_THRESHOLD} | Books read: {books_read}',
+            f'High cozy: {int(coziness)}/{HIGH_COZY_THRESHOLD} | Books read: {books_read} | Teas collected: {teas_collected}',
+            'Click fruits on trees for coziness | Click "Shop" to buy upgrades'
         ]
         for i, l in enumerate(lines):
             img = instructions_font.render(l, True, (70, 50, 40))
@@ -781,4 +829,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
